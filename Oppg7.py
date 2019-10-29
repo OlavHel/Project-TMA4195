@@ -10,6 +10,7 @@ newparams = {'figure.figsize': (8.0, 4.0), 'axes.grid': True,
              'font.size': 12}
 plt.rcParams.update(newparams)
 
+#CONSTANTS
 mu_g = 10
 mu_w = 40
 u = 1
@@ -48,28 +49,28 @@ def row_val(s,i,h):
 
 def one_row(t,s):
     h = X/n
-    outval = np.empty_like(s)
-    outval[0] = row_val(np.insert(s,0,alpha),1,h)
-    outval[-1] = row_val(np.insert(s,-1,beta),-2,h)
+    row = np.empty_like(s)
+    row[0] = row_val(np.insert(s,0,alpha),1,h)
+    row[-1] = row_val(np.insert(s,-1,beta),-2,h)
     for i in range(1,len(s)-1):
-        outval[i] = row_val(s,i,h)
-    return outval
+        row[i] = row_val(s,i,h)
+    return row
 
-X = 10
-n = 100
-alpha = 0.9
-beta = 0.2
+X = 10 #length in x-direction
+n = 100 #number of points
+alpha = 0.9 #s_l
+beta = 0.2 # s_R
 
 xs = np.linspace(-1,X,n)
-t = [0,1]
+t = [0,1] #time interval
 s = np.zeros(n-2)
 s[xs[1:-1] <= 0] = alpha
 s[xs[1:-1] > 0] = beta
 
 
-sol = solve_ivp(one_row, t, s, "RK23")
-t = sol.t
-U = sol.y
+sol = solve_ivp(one_row, t, s, "RK23") #ODE solver
+t = sol.t #t-values from the ODE solver
+U = sol.y #U-values from the ODE solver
 #U = np.vstack((np.ones(len(U[0,:])),U))
 
 
