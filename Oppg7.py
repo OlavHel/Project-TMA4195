@@ -17,7 +17,7 @@ phi = 0.4
 s_l = 1
 s_r = 0.1
 K = 0.1
-P_0 = 5
+P_0 = 4
 
 epsilon = mu_g/mu_w
 
@@ -78,4 +78,3 @@ print(U[:,-1])
 
 plot_solution(xs[1:-1],t,U)
 plt.show()
-
