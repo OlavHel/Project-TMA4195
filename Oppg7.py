@@ -22,6 +22,7 @@ P_0 = 4
 
 epsilon = mu_g/mu_w
 
+#function for 3D plotting
 def plot_solution(x, t, U, txt='Solution'):
     # Plot the solution of the heat equation
     fig = plt.figure(2)
