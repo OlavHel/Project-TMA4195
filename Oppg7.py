@@ -11,14 +11,12 @@ newparams = {'figure.figsize': (8.0, 4.0), 'axes.grid': True,
 plt.rcParams.update(newparams)
 
 #CONSTANTS
-mu_g = 10
-mu_w = 40
-u = 1
+mu_g = 1 #5*10**(-5)
+mu_w = 10 #5*10**(-4)
+u =  5 #1.5*10**(-4)
 phi = 0.4
-s_l = 1
-s_r = 0.1
-K = 0.1
-P_0 = 4
+K = 0.1 #10**(-14)
+P_0 = 5
 
 epsilon = mu_g/mu_w
 
@@ -36,47 +34,72 @@ def plot_solution(x, t, U, txt='Solution'):
     plt.ylabel('x')
     plt.title(txt);
 
-def f(s):
+def f1(s):
     return s/(s+(1-s)*epsilon)
+
+def f2(s):
+    return s**2/(s**2+epsilon*(1-s)**2)
 
 def dpc(s):
     return -P_0
 
-def g(s):
-    return -f(s)*K*(1-s)/mu_w*dpc(s)
+def g1(s):
+    return -f1(s)*K*(1-s)/mu_w*dpc(s)
 
-def row_val(s,i,h):
-    return -1/phi*(u*(f(s[i+1])-f(s[i-1]))/(2*h)-1/h**2*(g((s[i+1]+s[i])/2)*(s[i+1]-s[i])-g((s[i]+s[i-1])/2)*(s[i]-s[i-1])))
+def g2(s):
+    return -f2(s)*K*(1-s)**2/mu_w*dpc(s)
 
-def one_row(t,s):
+#def row_val(s,i,h):
+#    return -1/phi*(u*(f(s[i+1])-f(s[i-1]))/(2*h)-1/h**2*(g((s[i+1]+s[i])/2)*(s[i+1]-s[i])-g((s[i]+s[i-1])/2)*(s[i]-s[i-1])))
+
+def s_dot_i(s,i,h,f,g):
+    
+    fux = u*( f(s[i+1])-f(s[i-1]) )/(2*h)
+    gsxx = (g( (s[i+1]+s[i])/2 )*(s[i+1] - s[i]) - g( (s[i]+s[i-1])/2 )*(s[i] - s[i-1]) )/(h**2)
+    return (gsxx - fux)/phi
+
+def solver(X,xs,n,f,g,s,alpha,beta,Dirichlet = True):
     h = X/n
-    row = np.empty_like(s)
-    row[0] = row_val(np.insert(s,0,alpha),1,h)
-    row[-1] = row_val(np.insert(s,-1,beta),-2,h)
-    for i in range(1,len(s)-1):
-        row[i] = row_val(s,i,h)
-    return row
+    if Dirichlet: #dirichletbetingelser
+        def s_zero(t,s):
+            s0 = np.empty_like(s)
+            for i in range(1,len(s0)-1):
+                s0[i] = s_dot_i(s,i,h,f,g)
+            s0[0] = s_dot_i(np.insert(s,0,alpha),1,h,f,g)
+            s0[-1] = s_dot_i(np.insert(s,-1,beta),-2,h,f,g)
+            return s0
+        t = [0,10]
+        sol = solve_ivp(s_zero, t, s[1:-1], "RK23")
+        t_list = sol.t #t-values from the ODE solver
+        U_grid = sol.y #U-values from the ODE solver
+        U_sol = np.zeros((n,len(t_list)))
+        U_sol[1:-1] = U_grid
+        U_sol[0] = alpha
+        U_sol[-1] = beta
+        plot_solution(xs,t_list,U_sol)
+    else: #Neumannbetingelser, med den deriverte lik 0
+        def s_zero(t,s):
+            s0 = np.empty_like(s)
+            for i in range(1,len(s0)-1):
+                s0[i] = s_dot_i(s,i,h,f,g)
+            s0[0] = s_dot_i(np.insert(s,0,s[1]),1,h,f,g)
+            s0[-1] = s_dot_i(np.insert(s,-1,s[-2]),-2,h,f,g)
+            return s0
+        t = [0,10]
+        sol = solve_ivp(s_zero, t, s, "RK23")
+        t_list = sol.t #t-values from the ODE solver
+        U_grid = sol.y #U-values from the ODE solver
+        plot_solution(xs,t_list,U_grid)
+    return 0
 
-X = 10 #length in x-direction
-n = 100 #number of points
-alpha = 0.9 #s_l
-beta = 0.2 # s_R
+X = 50 #length in x-direction
+n = 500 #number of points
+alpha = 0.9
+beta = 0.1 
 
 xs = np.linspace(-1,X,n)
-t = [0,1] #time interval
-s = np.zeros(n-2)
-s[xs[1:-1] <= 0] = alpha
-s[xs[1:-1] > 0] = beta
+s = np.zeros(n)
+s[xs <= 0] = alpha
+s[xs > 0] = beta
 
-
-sol = solve_ivp(one_row, t, s, "RK23") #ODE solver
-t = sol.t #t-values from the ODE solver
-U = sol.y #U-values from the ODE solver
-#U = np.vstack((np.ones(len(U[0,:])),U))
-
-
-print(U[:,-1])
-#plot_solution(xs,t,U)
-
-plot_solution(xs[1:-1],t,U)
-plt.show()
+solver(X,xs,n,f1,g1,s,alpha,beta,Dirichlet = False)
