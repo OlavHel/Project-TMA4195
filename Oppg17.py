@@ -53,7 +53,7 @@ def g2(s):
 #    return -1/phi*(u*(f(s[i+1])-f(s[i-1]))/(2*h)-1/h**2*(g((s[i+1]+s[i])/2)*(s[i+1]-s[i])-g((s[i]+s[i-1])/2)*(s[i]-s[i-1])))
 
 def s_dot_i(s,i,h,f,g):
-    
+
     fux = u*( f(s[i+1])-f(s[i-1]) )/(2*h)
     gsxx = (g( (s[i+1]+s[i])/2 )*(s[i+1] - s[i]) - g( (s[i]+s[i-1])/2 )*(s[i] - s[i-1]) )/(h**2)
     return (gsxx - fux)/phi
@@ -82,8 +82,8 @@ def solver(X,xs,n,T,f,g,s,alpha,beta,Dirichlet = True):
             s0 = np.empty_like(s)
             for i in range(1,len(s0)-1):
                 s0[i] = s_dot_i(s,i,h,f,g)
-            s0[0] = s_dot_i(np.insert(s,0,s[1]),1,h,f,g)
-            s0[-1] = s_dot_i(np.insert(s,-1,s[-2]),-2,h,f,g)
+            s0[0] = s_dot_i(np.insert(s,0,s[0]),1,h,f,g)
+            s0[-1] = s_dot_i(np.insert(s,-1,s[-1]),-2,h,f,g)
             return s0
         sol = solve_ivp(s_zero, t, s, "RK23")
         t_list = sol.t #t-values from the ODE solver
@@ -95,7 +95,7 @@ X = 10 #length in x-direction
 n = 50 #number of points
 t = 100 #time
 alpha = 0.9
-beta = 0.1 
+beta = 0.1
 
 xs = np.linspace(-X,X,n)
 s = np.zeros(n)
