@@ -11,12 +11,12 @@ newparams = {'figure.figsize': (8.0, 4.0), 'axes.grid': True,
 plt.rcParams.update(newparams)
 
 #CONSTANTS
-mu_g = 1 #5*10**(-5)
-mu_w = 10 #5*10**(-4)
-u =  0.0 #1.5*10**(-4)
+mu_g = 5*10**(-5)
+mu_w = 5*10**(-4)
+u =  1.5*10**(-6)
 phi = 0.4
-K = 0.2 #10**(-14)
-P_0 = 5
+K = 10**(-13)
+P_0 = 7.5*10**6
 
 epsilon = mu_g/mu_w
 
@@ -40,6 +40,9 @@ def f1(s):
 def f2(s):
     return s**2/(s**2+epsilon*(1-s)**2)
 
+def f3(s):
+    return s
+
 def dpc(s):
     return -P_0
 
@@ -49,8 +52,8 @@ def g1(s):
 def g2(s):
     return -f2(s)*K*(1-s)**2/mu_w*dpc(s)
 
-#def row_val(s,i,h):
-#    return -1/phi*(u*(f(s[i+1])-f(s[i-1]))/(2*h)-1/h**2*(g((s[i+1]+s[i])/2)*(s[i+1]-s[i])-g((s[i]+s[i-1])/2)*(s[i]-s[i-1])))
+def g3(s):
+    return 0
 
 def s_dot_i(s,i,h,f,g):
     
@@ -106,20 +109,24 @@ def solver(X,xs,n,T,f,g,s,alpha,beta,Dirichlet = True, Neumann = False):
         plot_solution(xs,t_list,U_sol)
     return 0
 
-X = 10 #length in x-direction
-n = 50 #number of points
-t = 100 #time
-alpha = 1
-beta = 0
+#s2 = np.zeros(n)
+#s2[:] = beta
+#s2[abs(xs) <= 3] = alpha
 
-xs = np.linspace(0,X,n)
-s = np.zeros(n)
-s[xs <= 0] = alpha
-s[xs > 0] = beta
+#s3 = np.sin(xs)
 
-s2 = np.zeros(n)
-s2[:] = beta
-s2[abs(xs) <= 3] = alpha
-#print(s2)
+#solver(X,xs,n,t,f1,g1,s2,alpha,beta,Dirichlet = False,Neumann = True)
 
-solver(X,xs,n,t,f2,g2,s,alpha,beta,Dirichlet = False,Neumann = False)
+def question7():    
+    X = 1 #length in x-direction
+    n = 50 #number of points
+    T = 50 #time
+    alpha = 1
+    beta = 0
+    
+    xs = np.linspace(0,X,n)
+    s = np.zeros(n)
+    s[0] = alpha
+    solver(X,xs,n,T,f1,g1,s,alpha,beta,Dirichlet = False,Neumann = False)
+
+question7()
