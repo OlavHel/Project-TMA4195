@@ -23,7 +23,7 @@ epsilon = mu_g/mu_w
 #function for 3D plotting
 def plot_solution(x, t, U, txt='Solution'):
     # Plot the solution of the heat equation
-    fig = plt.figure(2)
+    fig = plt.figure()
     plt.clf()
     ax = fig.gca(projection='3d')
     T, X = np.meshgrid(t, x)
@@ -40,6 +40,7 @@ def f1(s):
 def f2(s):
     return s**2/(s**2+epsilon*(1-s)**2)
 
+# f3 og g3 er kun for å teste script, gir transport equation med travelling waves for riktige startvilkår
 def f3(s):
     return s
 
@@ -80,7 +81,7 @@ def solver(X,xs,n,T,f,g,s,alpha,beta,Dirichlet = True, Neumann = False):
         U_sol[0] = alpha
         U_sol[-1] = beta
         plot_solution(xs,t_list,U_sol)
-    if Neumann: #Neumannbetingelser, med den deriverte lik 0
+    elif Neumann: #Neumannbetingelser, med den deriverte lik 0
         def s_zero(t,s):
             s0 = np.empty_like(s)
             for i in range(1,len(s0)-1):
@@ -109,24 +110,45 @@ def solver(X,xs,n,T,f,g,s,alpha,beta,Dirichlet = True, Neumann = False):
         plot_solution(xs,t_list,U_sol)
     return 0
 
-#s2 = np.zeros(n)
-#s2[:] = beta
-#s2[abs(xs) <= 3] = alpha
-
-#s3 = np.sin(xs)
-
-#solver(X,xs,n,t,f1,g1,s2,alpha,beta,Dirichlet = False,Neumann = True)
-
 def question7():    
     X = 1 #length in x-direction
-    n = 50 #number of points
+    n = 100 #number of points
     T = 50 #time
     alpha = 1
     beta = 0
     
     xs = np.linspace(0,X,n)
     s = np.zeros(n)
+    s[:] = beta
     s[0] = alpha
     solver(X,xs,n,T,f1,g1,s,alpha,beta,Dirichlet = False,Neumann = False)
 
+def question17(case1 = True):
+    X = 1 #length in x-direction
+    n = 100 #number of points
+    T = 100 #time
+    alpha = 1 #initial vales
+    beta = 0 # --||--
+    xs = np.linspace(0,X,n)
+    if case1:       
+        b0 = 0 #boundary values
+        b1 = 0 #--||--
+        s = np.zeros(n)
+        s[:] = beta
+        s[int(len(xs)*0.47):int(len(xs)*0.53)] = alpha
+        
+        solver(X,xs,n,T,f2,g2,s,b0,b1,Dirichlet = False,Neumann = True)
+    else:
+        b0 = 1 #boundary values
+        b1 = 0 #--||--       
+        s = np.zeros(n)
+        s[:] = beta
+        s[0] = alpha
+        
+        solver(X,xs,n,T,f2,g2,s,b0,b1,Dirichlet = False,Neumann = False)
+
 question7()
+
+question17()
+    
+question17(False)
